@@ -1,4 +1,5 @@
 // to authenticcate users
+const passport = require("passport");
 const secret = require("../../config/keys").secret;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -28,6 +29,7 @@ router.post("/register", (req, res) => {
     });
     const newUser = new User({
       name: req.body.name,
+      phone: req.body.phone,
       email: req.body.email,
       avatar,
       password: req.body.password
@@ -53,12 +55,14 @@ router.post("/register", (req, res) => {
 //@acess  public
 router.post("/login", (req, res) => {
   const email = req.body.email;
+  const phone = req.body.phone;
+
   const password = req.body.password;
   //find user by email
-  User.findOne({ email }).then(user => {
+  User.findOne({ phone }).then(user => {
     //check for user
     if (!user) {
-      res.status(400).json({ email: "email not found" });
+      res.status(400).json({ phone: "email not found" });
     }
     //check password
     bcrypt.compare(password, user.password).then(ismatch => {
@@ -76,4 +80,14 @@ router.post("/login", (req, res) => {
     });
   });
 });
+//@route  Get api/users/current
+//@desc   return current user
+//@acess  protected
+router.get(
+  "/current",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    res.json({ msg: "sucess" });
+  }
+);
 module.exports = router;
